@@ -31,15 +31,14 @@ export default ({ devices }) => `
 <p>Password <code>toor</code></p>
 <p><code>hostnamectl hostname ISP ; exec bash</code></p>
 <p>Накатываем обновления</p>
-<p><pre><code>apt-get update
-apt-get install -y NetworkManager-tui iptables
-systemctl enable --now NetworkManager
-</code></pre></p>
+<p><code>apt-get update</code></p>
+<p><code>apt-get install -y NetworkManager-tui iptables</code></p>
+<p><code>systemctl enable --now NetworkManager</code></p>
 <p><code>nmtui</code></p>
 <p>настраиваем два интерфейса:</p>
-<p>имя профиля HQ-RTR</p>
+<p>Имя профиля: <code>HQ-RTR</code></p>
 <p>${devices.isp.interfaces.hqRtr.name}: <code>${devices.isp.interfaces.hqRtr.ip}/${devices.isp.interfaces.hqRtr.mask}</code></p>
-<p>имя профиля BR-RTR</p>
+<p>Имя профиля: <code>BR-RTR</code></p>
 <p>${devices.isp.interfaces.brRtr.name}: <code>${devices.isp.interfaces.brRtr.ip}/${devices.isp.interfaces.brRtr.mask}</code></p>
 <p>проверяем:</p>
 <p><code>ip -br a</code></p>
@@ -48,10 +47,9 @@ systemctl enable --now NetworkManager
 <p><code>sed -i 's/^net\\.ipv4\\.ip_forward *= *.*/net.ipv4.ip_forward = 1/' /etc/net/sysctl.conf</code></p>
 <p><code>systemctl restart network</code></p>
 <p>настраиваем nat</p>
-<p><pre><code>iptables -t nat -j MASQUERADE -A POSTROUTING -o ens18
-iptables-save > /etc/sysconfig/iptables
-systemctl enable iptables --now
-</code></pre></p>
+<p><code>iptables -t nat -j MASQUERADE -A POSTROUTING -o ens18</code></p>
+<p><code>iptables-save > /etc/sysconfig/iptables</code></p>
+<p><code>systemctl enable iptables --now</code></p>
 <br>
 <p>Запуск HQ-RTR</p>
 <p><code>hostnamectl hostname HQ-RTR.au-team.irpo ; exec bash</code></p>
@@ -233,21 +231,22 @@ ip -br a
 <p>исправить строку <code>ospfd=yes</code></p>
 <p><code>systemctl restart frr</code></p>
 <p><code>systemctl enable --now frr</code></p>
-<p><code>vtysh</code></p>
-<p><code>conf t</code></p>
-<p><code>ip forwarding</code></p>
-<p><code>router ospf</code></p>
-<p><code>network ${devices.hqRtr.interfaces.brRtr.netAddress}/${devices.hqRtr.interfaces.brRtr.mask} area 0</code></p>
-<p><code>network ${devices.hqRtr.interfaces.hqSrv.netAddress}/${devices.hqRtr.interfaces.hqSrv.mask} area 0</code></p>
-<p><code>network ${devices.hqRtr.interfaces.hqCli.netAddress}/${devices.hqRtr.interfaces.hqCli.mask} area 0</code></p>
-<p><code>network ${devices.hqRtr.interfaces.vlan999.netAddress}/${devices.hqRtr.interfaces.vlan999.mask} area 0</code></p>
-<p><code>ex</code></p>
-<p><code>int gre1</code></p>
-<p><code>no ip ospf passive</code></p>
-<p><code>ex</code></p>
-<p><code>ex</code></p>
-<p><code>wr</code></p>
-<p><code>ex</code></p>
+<pre><code>vtysh
+conf t
+ip forwarding
+router ospf
+network ${devices.hqRtr.interfaces.brRtr.netAddress}/${devices.hqRtr.interfaces.brRtr.mask} area 0
+network ${devices.hqRtr.interfaces.hqSrv.netAddress}/${devices.hqRtr.interfaces.hqSrv.mask} area 0
+network ${devices.hqRtr.interfaces.hqCli.netAddress}/${devices.hqRtr.interfaces.hqCli.mask} area 0
+network ${devices.hqRtr.interfaces.vlan999.netAddress}/${devices.hqRtr.interfaces.vlan999.mask} area 0
+ex
+int gre1
+no ip ospf passive
+ex
+ex
+wr
+ex
+</code></pre>
 <p><code>vim /etc/NetworkManager/system-connections/BR-RTR.nmconnection</code></p>
 <p>Добавить в секцию ip-tunnel <code>ttl=64</code></p>
 <p><code>reboot</code></p>
@@ -258,33 +257,38 @@ ip -br a
 <p>исправить строку <code>ospfd=yes</code></p>
 <p><code>systemctl restart frr</code></p>
 <p><code>systemctl enable --now frr</code></p>
-<p><code>vtysh</code></p>
-<p><code>conf t</code></p>
-<p><code>ip forwarding</code></p>
-<p><code>router ospf</code></p>
-<p><code>passive-interface default</code></p>
-<p><code>network ${devices.brRtr.interfaces.hqRtr.netAddress}/${devices.brRtr.interfaces.hqRtr.mask} area 0</code></p>
-<p><code>network ${devices.brRtr.interfaces.brSrv.netAddress}/${devices.brRtr.interfaces.brSrv.mask} area 0</code></p>
-<p><code>ex</code></p>
-<p><code>int gre1</code></p>
-<p><code>no ip ospf passive</code></p>
-<p><code>ex</code></p>
-<p><code>ex</code></p>
-<p><code>wr</code></p>
-<p><code>ex</code></p>
+<pre><code>
+vtysh
+conf t
+ip forwarding
+router ospf
+passive-interface default
+network ${devices.brRtr.interfaces.hqRtr.netAddress}/${devices.brRtr.interfaces.hqRtr.mask} area 0
+network ${devices.brRtr.interfaces.brSrv.netAddress}/${devices.brRtr.interfaces.brSrv.mask} area 0
+ex
+int gre1
+no ip ospf passive
+ex
+ex
+wr
+ex
+</code></pre>
 <p><code>vim /etc/NetworkManager/system-connections/HQ-RTR.nmconnection</code></p>
 <p>Добавить в секцию ip-tunnel <code>ttl=64</code></p>
 <p><code>reboot</code></p>
 <br>
 <h3>Задание 8</h3>
 <p>HQ-RTR</p>
-<p><code>iptables -t nat -j MASQUERADE -A POSTROUTING</code></p>
-<p><code>iptables-save > /etc/sysconfig/iptables</code></p>
-<p><code>systemctl enable --now iptables</code></p>
+<pre><code>iptables -t nat -j MASQUERADE -A POSTROUTING
+iptables-save > /etc/sysconfig/iptables
+systemctl enable --now iptables
+</code></pre>
 <p>BR-RTR</p>
-<p><code>iptables -t nat -j MASQUERADE -A POSTROUTING</code></p>
-<p><code>iptables-save > /etc/sysconfig/iptables</code></p>
-<p><code>systemctl enable --now iptables</code></p>
+<pre><code>
+iptables -t nat -j MASQUERADE -A POSTROUTING
+iptables-save > /etc/sysconfig/iptables
+systemctl enable --now iptables
+</code></pre>
 <br>
 <h3>Задание 9</h3>
 <p>HQ-RTR</p>
@@ -373,11 +377,12 @@ zone "${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa"
 <p>Убираем лишнее и пишем основные моменты:</p>
 <p><pre><code>@&#9;IN&#9;SOA&#9;${getReverseZone(devices.hqRtr.interfaces.hqSrv.netAddress)}.in-addr.arpa. root.${getReverseZone(devices.hqRtr.interfaces.hqSrv.netAddress)}.in-addr.arpa. (</code></pre></p>
 <br>
-<p><pre><code>&#9;&#9;&#9;)</code></pre></p>
-<p><pre><code>&#9;IN&#9;NS&#9;${getReverseZone(devices.hqRtr.interfaces.hqSrv.netAddress)}.in-addr.arpa.</code></pre></p>
-<p><pre><code>&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}</code></pre></p>
-<p><pre><code>${getLastOctet(devices.hqSrv.interfaces.hqRtr.ip)}&#9;IN&#9;PTR&#9;hq-srv.au-team.irpo.</code></pre></p>
-<p><pre><code>${getLastOctet(devices.hqRtr.interfaces.hqSrv.ip)}&#9;IN&#9;PTR&#9;hq-rtr.au-team.irpo.</code></pre></p>
+<pre><code>&#9;&#9;&#9;)</code></pre>
+<pre><code>&#9;IN&#9;NS&#9;${getReverseZone(devices.hqRtr.interfaces.hqSrv.netAddress)}.in-addr.arpa.
+&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}
+${getLastOctet(devices.hqSrv.interfaces.hqRtr.ip)}&#9;IN&#9;PTR&#9;hq-srv.au-team.irpo.
+${getLastOctet(devices.hqRtr.interfaces.hqSrv.ip)}&#9;IN&#9;PTR&#9;hq-rtr.au-team.irpo.
+</code></pre>
 <br>
 <p><code>cp zone/100.db zone/200.db</code></p>
 <p><code>vim zone/200.db</code></p>
@@ -385,25 +390,28 @@ zone "${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa"
 <p><pre><code>@&#9;IN&#9;SOA&#9;${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa. root.${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa. (</code></pre></p>
 <br>
 <p><pre><code>&#9;&#9;&#9;)</code></pre></p>
-<p><pre><code>&#9;IN&#9;NS&#9;${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa.</code></pre></p>
-<p><pre><code>&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}</code></pre></p>
-<p><pre><code>${getLastOctet(devices.hqCli.interfaces.hqRtr.ip)}&#9;IN&#9;PTR&#9;hq-cli.au-team.irpo.</code></pre></p>
-<p><pre><code>${getLastOctet(devices.hqRtr.interfaces.hqCli.ip)}&#9;IN&#9;PTR&#9;hq-rtr.au-team.irpo.</code></pre></p>
+<p><pre><code>&#9;IN&#9;NS&#9;${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa.
+&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}
+${getLastOctet(devices.hqCli.interfaces.hqRtr.ip)}&#9;IN&#9;PTR&#9;hq-cli.au-team.irpo.
+${getLastOctet(devices.hqRtr.interfaces.hqCli.ip)}&#9;IN&#9;PTR&#9;hq-rtr.au-team.irpo.
+</code></pre></p>
 <br>
 <p><code>vim zone/au-team.db</code></p>
 <p>Убираем лишнее и пишем основные моменты:</p>
 <p><pre><code>@&#9;IN&#9;SOA&#9;hq-srv.au-team.irpo. root.au-team.irpo. (</code></pre></p>
 <br>
 <p><pre><code>&#9;&#9;&#9;)</code></pre></p>
-<p><pre><code>&#9;IN&#9;NS&#9;hq-srv.au-team.irpo.</code></pre></p>
-<p><pre><code>&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}</code></pre></p>
-<p><pre><code>hq-rtr&#9;IN&#9;A&#9;${devices.hqRtr.interfaces.hqSrv.ip}</code></pre></p>
-<p><pre><code>br-rtr&#9;IN&#9;A&#9;${devices.brRtr.interfaces.brSrv.ip}</code></pre></p>
-<p><pre><code>hq-srv&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}</code></pre></p>
-<p><pre><code>hq-cli&#9;IN&#9;A&#9;${devices.hqCli.interfaces.hqRtr.ip}</code></pre></p>
-<p><pre><code>br-srv&#9;IN&#9;A&#9;${devices.brSrv.interfaces.brRtr.ip}</code></pre></p>
-<p><pre><code>wiki&#9;IN&#9;CNAME&#9;hq-rtr.au-team.irpo.</code></pre></p>
-<p><pre><code>moodle&#9;IN&#9;CNAME&#9;hq-rtr.au-team.irpo.</code></pre></p>
+<p><pre><code>
+&#9;IN&#9;NS&#9;hq-srv.au-team.irpo.
+&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}
+hq-rtr&#9;IN&#9;A&#9;${devices.hqRtr.interfaces.hqSrv.ip}
+br-rtr&#9;IN&#9;A&#9;${devices.brRtr.interfaces.brSrv.ip}
+hq-srv&#9;IN&#9;A&#9;${devices.hqSrv.interfaces.hqRtr.ip}
+hq-cli&#9;IN&#9;A&#9;${devices.hqCli.interfaces.hqRtr.ip}
+br-srv&#9;IN&#9;A&#9;${devices.brSrv.interfaces.brRtr.ip}
+wiki&#9;IN&#9;CNAME&#9;hq-rtr.au-team.irpo.
+moodle&#9;IN&#9;CNAME&#9;hq-rtr.au-team.irpo.
+</code></pre></p>
 <br>
 <p><code>rndc-confgen > rndc.key</code></p>
 <p><code>sed -i '6,$d' rndc.key</code></p>
@@ -415,20 +423,24 @@ zone "${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa"
 <p><code>systemctl enable --now bind</code></p>
 <br>
 <p>BR-RTR</p>
-<p><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf</code></p>
-<p><code>systemctl restart network</code></p>
+<p><pre><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf
+systemctl restart network
+</code></pre></p>
 <br>
 <p>BR-SRV</p>
-<p><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf</code></p>
-<p><code>systemctl restart network</code></p>
+<p><pre><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf
+systemctl restart network
+</code></pre></p>
 <br>
 <p>HQ-RTR</p>
-<p><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf</code></p>
-<p><code>systemctl restart network</code></p>
+<p><pre><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf
+systemctl restart network
+</code></pre></p>
 <br>
 <p>HQ-CLI</p>
-<p><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf</code></p>
-<p><code>systemctl restart network</code></p>
+<p><pre><code>echo -e 'nameserver ${devices.hqSrv.interfaces.hqRtr.ip}\\ndomain au-team.irpo' > /etc/net/ifaces/ens18/resolv.conf
+systemctl restart network
+</code></pre></p>
 <br>
 <h3>Задание 11</h3>
 <p>HQ-SRV, BR-SRV, HQ-RTR, BR-RTR, HQ-CLI</p>
@@ -437,28 +449,29 @@ zone "${getReverseZone(devices.hqRtr.interfaces.hqCli.netAddress)}.in-addr.arpa"
 <h2>Модуль № 2</h2>
 <h3>Задание 1</h3>
 <p>BR-SRV</p>
-<p><code>apt-get install -y task-samba-dc</code></p>
-<p><code>rm -f /etc/samba/smb.conf</code></p>
-<p><code>rm -rf /var/lib/samba/</code></p>
-<p><code>rm -rf /var/cache/samba/</code></p>
-<p><code>mkdir -p /var/lib/samba/sysvol</code></p>
-<p><code>samba-tool domain provision</code></p>
-<p>пароль <code>P@ssw0rd</code></p>
-<p><code>systemctl enable --now samba.service</code></p>
-<p><code>\\cp -f /var/lib/samba/private/krb5.conf /etc/</code></p>
+<p><pre><code>apt-get update
+apt-get install -y task-samba-dc
+rm -f /etc/samba/smb.conf
+rm -rf /var/lib/samba/
+rm -rf /var/cache/samba/
+mkdir -p /var/lib/samba/sysvol
+samba-tool domain provision
+</code></pre></p>
+<p><code>P@ssw0rd</code></p>
+<p><pre><code>
+systemctl enable --now samba.service
+\\cp -f /var/lib/samba/private/krb5.conf /etc/
+</code></pre></p>
 <p><code>visudo</code></p>
 <p>добавляем ниже <code># root ALL=(ALL:ALL) ALL</code></p>
 <p><code>%hq ALL=(ALL) NOPASSWD: /bin/cat, /bin/grep, /usr/bin/id</code></p>
-<p>сохраняем</p>
 <p><code>vim /opt/users.csv</code></p>
-<p>добавляем (проследить, чтобы без пробелов)</p>
+<p>добавляем (проследить, чтобы не было пустых строк)</p>
 <p><pre><code>user1.hq;P@ssw0rd
 user2.hq;P@ssw0rd
 user3.hq;P@ssw0rd
 user4.hq;P@ssw0rd
-user5.hq;P@ssw0rd
-</code></pre></p>
-<p>сохраняем</p>
+user5.hq;P@ssw0rd</code></pre></p>
 <p><code>mkdir -p /opt/smdscripts</code></p>
 <p><code>vim /opt/smdscripts/import.sh</code></p>
 <p><pre><code>#!/bin/bash
@@ -483,8 +496,9 @@ done < /opt/five_users.csv
 <p><code>systemctl restart dhcpd</code></p>
 <br>
 <p>HQ-CLI</p>
-<p><code>echo -e 'search au-team.irpo\\nnameserver ${devices.brSrv.interfaces.brRtr.ip}' > /etc/net/ifaces/ens18/resolv.conf</code></p>
-<p><code>systemctl restart network</code></p>
+<p><pre><code>echo -e 'search au-team.irpo\\nnameserver ${devices.brSrv.interfaces.brRtr.ip}' > /etc/resolv.conf
+systemctl restart network
+</code></pre></p>
 <p>Запускаем Control Center > пишем в поиске <code>acc</code> > <code>toor</code></p>
 <p>Users > Authentication</p>
 <p>Активируем Active Directory domain</p>
@@ -498,7 +512,7 @@ done < /opt/five_users.csv
 <br>
 <h3>Задание 2</h3>
 <p>HQ-SRV</p>
-<p><code>mdadm --create --verbose /dev/md0 --level =5 --raid-devices=3 /dev/sdc /dev/sdb /dev/sdd</code></p>
+<p><code>mdadm --create --verbose /dev/md0 --level=5 --raid-devices=3 /dev/sdc /dev/sdb /dev/sdd</code></p>
 <p><code>mdadm --detail --scan I tee -a /etc/mdadm.conf</code></p>
 <p><code>mkfs.ext4 /dev/md0</code></p>
 <p><code>mkdir -p /raid5</code></p>
