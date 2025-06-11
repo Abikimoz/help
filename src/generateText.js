@@ -351,8 +351,7 @@ subnet ${devices.hqRtr.interfaces.hqCli.netAddress} netmask ${cidrToMask(devices
 <p><code>vim rfc1912.conf</code></p>
 <p>В виме ввести <code>:set paste</code> для включения режима вставки</p>
 <p>Удалить лишнее и оставить:</p>
-<p><pre><code>
-zone "au-team.irpo" {
+<p><pre><code>zone "au-team.irpo" {
 &#9;type master;
 &#9;file "au-team.db";
 &#9;allow-update { any; };
@@ -513,10 +512,10 @@ systemctl restart network
 <h3>Задание 2</h3>
 <p>HQ-SRV</p>
 <p><code>mdadm --create --verbose /dev/md0 --level=5 --raid-devices=3 /dev/sdc /dev/sdb /dev/sdd</code></p>
-<p><code>mdadm --detail --scan I tee -a /etc/mdadm.conf</code></p>
+<p><code>mdadm --detail --scan | tee a /etc/mdadm.conf</code></p>
 <p><code>mkfs.ext4 /dev/md0</code></p>
 <p><code>mkdir -p /raid5</code></p>
-<p><code>bikid /dev/md0 > /etc/fstab</code></p>
+<p><code>blkid /dev/md0 >> /etc/fstab</code></p>
 <p><code>vim /etc/fstab</code></p>
 <p>в последней строке оставляем только UUID и приписываем /raid5 ext4 defaults 0 0 </p>
 <p>сохраняем</p>
@@ -526,7 +525,7 @@ systemctl restart network
 <p><code>apt-get install -y nfs-server</code></p>
 <p><code>mkdir -p /raid5/nfs</code></p>
 <p><code>vim /etc/exports</code></p>
-<p>добавляем второй строкой /raid5/nfs ${devices.hqSrv.interfaces.hqRtr.ip}(rw,sync,no_subtree_check)</p>
+<p>добавляем второй строкой /raid5/nfs ${devices.hqCli.interfaces.hqRtr.ip}(rw,sync,no_subtree_check)</p>
 <p>сохраняем</p>
 <p><code>exportfs -a</code></p>
 <p><code>systemctl restart nfs-server.service</code></p>
@@ -637,6 +636,28 @@ volumes:
 <p><code>iptables -t nat -A PREROUTING -p tcp --dport 22 -j DNAT --to-destination ${devices.brSrv.interfaces.brRtr.ip}:2024</code></p>
 <p><code>iptables-save >> /etc/sysconfig/iptables</code></p>
 <br>
+<h3>Задание 7</h3>
+<p>HQ-SRV</p>
+<p><code>apt-get install -y moodle moodle-apache2 moodle-local-mysql php8.1 php8.1-mysqli php8.1-xml php8.1-mbstring mariadb-server</code></p>
+<p><code>systemctl restart mariadb</code></p>
+<p><code>systemctl enable --now mariadb</code></p>
+<p><code>mysql_secure_installation</code></p>
+<p><code>mysql -u root -p</code></p>
+<p><code>CREATE DATABASE moodledb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;</code></p>
+<p><code>CREATE USER 'moodle'@'localhost' IDENTIFIED BY 'P@ssw0rd';</code></p>
+<p><code>GRANT ALL PRIVILEGES ON moodledb.* TO 'moodle'@'localhost';</code></p>
+<p><code>FLUSH PRIVILEGES;</code></p>
+<p><code>exit</code></p>
+<p><code>cd /var/www/webapps/moodle</code></p>
+<p><code>cp config-dist.php config.php</code></p>
+<p><code>vim config.php</code></p>
+<p><code>mkdir /var/moodledata</code></p>
+<p><code>chown -R apache:apache /var/moodledata</code></p>
+<p><code>chmod -R 0777 /var/moodledata</code></p>
+<p><code>a2enmod rewrite</code></p>
+<p><code>nano /etc/php/8.2/apache2-mod_php/php.ini</code></p>
+<p><code>systemctl restart httpd2.service</code></p>
+<p><code>systemctl enable --now httpd2.service</code></p>
 <h3>Задание 8</h3>
 <p>HQ-RTR</p>
 <p><code>apt-get install -y nginx</code></p>
